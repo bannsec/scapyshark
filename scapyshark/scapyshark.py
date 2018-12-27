@@ -48,10 +48,19 @@ class ScapyShark(object):
         if inp in ('q','Q'):
             raise urwid.ExitMainLoop()
 
-        if inp == 'enter':
+        elif inp == 'enter':
             # User hit enter on a packet for more information
             if self._top_box in focus_widgets:
                 show_packet_info(self, focus_widgets[-1])
+
+        elif inp == 'tab':
+            if self._top_box in focus_widgets:
+                self._body_pile.set_focus(self._middle_box)
+            elif self._middle_box in focus_widgets:
+                self._body_pile.set_focus(self._bottom_box)
+            elif self._bottom_box in focus_widgets:
+                self._body_pile.set_focus(self._top_box)
+            
 
         
 def main():

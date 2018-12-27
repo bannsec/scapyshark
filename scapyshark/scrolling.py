@@ -16,7 +16,7 @@ class ScrollingListBox(ListBox):
             message (str): Text message that will appear
             packet (Scapy packet): Packet that corresponds to this entry.
         """
-        txt = AttrMap(Text(message), 'frame', 'selected_packet')
+        txt = AttrMap(Text(message), 'frame', 'selected')
         self.walker.append(txt)
         self.packets.append(packet)
 

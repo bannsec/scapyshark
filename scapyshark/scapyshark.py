@@ -11,6 +11,7 @@ palette = [
     ('key','light cyan', 'black', 'underline'),
     ('title', 'white', 'black',),
     ('frame', 'dark green', 'black'),
+    ('selected_packet', 'light green', 'black'),
     ]
 
 class ScapyShark(object):
@@ -21,6 +22,7 @@ class ScapyShark(object):
 
     def _init_window(self):
         self._header_box = urwid.BoxAdapter(urwid.AttrMap(urwid.Filler(urwid.Text('ScapyShark', align='center')), 'header'), 1)
+        self._footer_box = urwid.BoxAdapter(urwid.AttrMap(urwid.Filler(urwid.Text('No Packets Yet.', align='right')), 'header'), 1)
 
         # Body
         self._top_box = ScrollingListBox()
@@ -31,7 +33,7 @@ class ScapyShark(object):
         self._body_pile = urwid.Pile([self._top_box, divider, self._middle_box, divider, self._bottom_box], focus_item=self._top_box)
 
         # Overarching Frame
-        self.frame = urwid.Frame(self._body_pile, header=self._header_box, focus_part='body')
+        self.frame = urwid.Frame(self._body_pile, header=self._header_box, footer=self._footer_box, focus_part='body')
 
         # The main loop
         self.loop = urwid.MainLoop(urwid.AttrMap(self.frame, 'frame'), unhandled_input=self.unhandled_input, palette=palette)
@@ -41,8 +43,16 @@ class ScapyShark(object):
         self.loop.run()
 
     def unhandled_input(self, inp):
+        focus_widgets = self.loop.widget.base_widget.get_focus_widgets()
+
         if inp in ('q','Q'):
             raise urwid.ExitMainLoop()
+
+        if inp == 'enter':
+            # User hit enter on a packet for more information
+            if self._top_box in focus_widgets:
+                show_packet_info(self, focus_widgets[-1])
+
         
 def main():
     shark = ScapyShark()
@@ -51,3 +61,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+from .packetinfo import show_packet_info

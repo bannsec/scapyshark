@@ -79,6 +79,18 @@ class ScapyShark(object):
         elif inp in ('m', 'M'):
             menu.main_menu.open(self)
 
+        elif inp == 'down':
+            # Did our menu mess up?
+            for overlay in self._overlays:
+                if overlay['widget'] in focus_widgets:
+                    overlay['widget'].base_widget.focus_position = (overlay['widget'].base_widget.focus_position + 1) % len(overlay['widget'].base_widget.body)
+                
+        elif inp == 'up':
+            # Did our menu mess up?
+            for overlay in self._overlays:
+                if overlay['widget'] in focus_widgets:
+                    overlay['widget'].base_widget.focus_position = (overlay['widget'].base_widget.focus_position - 1) % len(overlay['widget'].base_widget.body)
+
     def _pop_overlay(self):
         """ Remove top overlay. """
         overlay = self._overlays.pop()

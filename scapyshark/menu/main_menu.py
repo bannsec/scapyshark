@@ -1,7 +1,9 @@
 
 ITEM_CLOSE = 'Close'
+ITEM_CONVERSATIONS_DOT = 'Conversations - DOT'
 
 menu_items = [
+    ITEM_CONVERSATIONS_DOT,
     ITEM_CLOSE,
 ]
 
@@ -9,7 +11,7 @@ def open(scapyshark):
     """ Open up this menu. """
     global menu
 
-    overlay = urwid.Overlay(menu, scapyshark.loop.widget, 'center', 20, 'middle', 20)
+    overlay = urwid.Overlay(menu, scapyshark.loop.widget, 'center', 30, 'middle', 20)
 
     # Register that we have it open
     scapyshark._overlays.append({
@@ -30,6 +32,9 @@ def enter_handler(scapyshark, focus_widgets):
 
     if text == ITEM_CLOSE:
         scapyshark._pop_overlay()
+
+    elif text == ITEM_CONVERSATIONS_DOT:
+        scapyshark._top_box.packets.conversations()
 
 
 import urwid

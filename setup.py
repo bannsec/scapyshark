@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 import os, sys, ast
+from scapyshark.version import version
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -12,7 +13,7 @@ long_description = "See website for more info."
 
 setup(
     name='scapyshark',
-    version='0.0.1',
+    version=version,
     description='Wireshark, but with Scapy.',
     long_description=long_description,
     url='https://github.com/bannsec/scapyshark',

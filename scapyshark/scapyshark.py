@@ -4,6 +4,7 @@ import scapy.all
 import urwid
 from .scrolling import ScrollingListBox
 from .sniffer import Sniffer
+from .version import version
 
 palette = [
     ('body','black','dark cyan', 'standout'),
@@ -24,7 +25,8 @@ class ScapyShark(object):
         self._overlays = []
 
     def _init_window(self):
-        self._header_box = urwid.BoxAdapter(urwid.AttrMap(urwid.Filler(urwid.Text('ScapyShark', align='center')), 'header'), 1)
+        header = 'ScapyShark v{version}'.format(version=version)
+        self._header_box = urwid.BoxAdapter(urwid.AttrMap(urwid.Filler(urwid.Text(header, align='center')), 'header'), 1)
         self._footer_box = urwid.BoxAdapter(urwid.AttrMap(urwid.Filler(urwid.Text('No Packets Yet.', align='right')), 'header'), 1)
 
         # Body

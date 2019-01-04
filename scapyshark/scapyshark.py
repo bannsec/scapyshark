@@ -23,6 +23,8 @@ class ScapyShark(object):
 
         # Keep track of what overlays are open
         self._overlays = []
+        
+        self._main_menu = menu.main_menu.build_menu(self)
 
     def _init_window(self):
         header = 'ScapyShark v{version}'.format(version=version)
@@ -67,7 +69,7 @@ class ScapyShark(object):
             # Did uer hit enter on an overlay menu
             for overlay in self._overlays:
                 if overlay['widget'] in focus_widgets:
-                    overlay['enter_handler'](self, focus_widgets)
+                    overlay['enter_handler'](focus_widgets)
                     break
 
         elif inp == 'tab':
@@ -79,7 +81,7 @@ class ScapyShark(object):
                 self._body_pile.set_focus(self._top_box)
 
         elif inp in ('m', 'M'):
-            menu.main_menu.open(self)
+            self._main_menu.open()
 
         elif inp == 'down':
             # Did our menu mess up?

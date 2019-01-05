@@ -13,7 +13,10 @@ class MenuBase(object):
     def open(self):
         """ Open up this menu. """
 
-        overlay = urwid.Overlay(self._menu, self._scapyshark.loop.widget, 'center', 30, 'middle', 20)
+        max_width = max(len(x.original_widget.get_text()[0]) for x in list(self._menu.original_widget.original_widget.body))
+        max_width = max(max_width, len(self._menu.original_widget.title_widget.get_text()[0]))
+
+        overlay = urwid.Overlay(self._menu, self._scapyshark.loop.widget, 'center', max_width+5, 'middle', 20)
 
         # Register that we have it open
         self._scapyshark._overlays.append({

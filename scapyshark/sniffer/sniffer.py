@@ -1,4 +1,7 @@
 
+import logging
+logger = logging.getLogger('ScapyShark:Sniffer')
+
 import scapy.all
 from threading import Thread
 import pexpect
@@ -8,6 +11,7 @@ import struct
 from time import time
 import json
 import collections
+import shutil
 
 TSHARK_PIPE = '/tmp/scapyshark.pipe'
 
@@ -21,7 +25,13 @@ class Sniffer(object):
         """
 
         self._shark = shark
-        self._init_tshark()
+
+        if shutil.which('tshark') is None:
+            logger.warn('tshark is not installed. No enrichment will be done.')
+            self._notshark = True
+        else:
+            self._init_tshark()
+            self._notshark = False
         
     def start(self):
         """ Start sniffing. """
@@ -68,6 +78,11 @@ class Sniffer(object):
 
     def _get_packet_enriched_data(self, packet):
         """ Call out to tshark to get enriched packet data. """
+
+        # If tshark isn't here, we can't enrich
+        if self._notshark:
+            logger.debug('No tshark. Ignoring request for enriched data.')
+            return None
         
         # Write the packet to the pipe
         self._tshark_pipe.write(self._format_packet(packet))

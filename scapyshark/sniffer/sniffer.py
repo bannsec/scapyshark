@@ -35,7 +35,12 @@ class Sniffer(object):
         
     def start(self):
         """ Start sniffing. """
-        sniffer = Thread(target=scapy.all.sniff, kwargs={'store': False, 'prn': self._handle_new_packet})
+        kwargs={'store': False,
+                'prn': self._handle_new_packet,
+                'filter': ' '.join(self._shark._args.expression)
+                }
+
+        sniffer = Thread(target=scapy.all.sniff, kwargs=kwargs)
         sniffer.daemon = True
         sniffer.start()
 

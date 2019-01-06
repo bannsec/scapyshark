@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import scapy.all
 import urwid
 from .scrolling import ScrollingListBox
@@ -18,6 +19,8 @@ palette = [
 class ScapyShark(object):
 
     def __init__(self):
+        
+        self._parse_args()
         self._init_window()
         self.sniffer = Sniffer(self)
 
@@ -25,6 +28,15 @@ class ScapyShark(object):
         self._overlays = []
         
         self._main_menu = menu.main_menu.build_menu(self)
+    
+    def _parse_args(self):
+        parser = argparse.ArgumentParser(
+            description='Text based network sniffer based on python scapy. Layout loosely similar to Wireshark.'
+            )
+        parser.add_argument('expression', type=str, nargs='*', default=None,
+                help="BPF Capture Filter. Example: not tcp port 22 and host 127.0.0.1")
+        self._args = parser.parse_args()
+
 
     def _init_window(self):
         header = 'ScapyShark v{version}'.format(version=version)

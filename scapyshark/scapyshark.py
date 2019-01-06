@@ -80,6 +80,14 @@ class ScapyShark(object):
             elif self._bottom_box in focus_widgets:
                 self._body_pile.set_focus(self._top_box)
 
+        elif inp == 'shift tab':
+            if self._top_box in focus_widgets:
+                self._body_pile.set_focus(self._bottom_box)
+            elif self._middle_box in focus_widgets:
+                self._body_pile.set_focus(self._top_box)
+            elif self._bottom_box in focus_widgets:
+                self._body_pile.set_focus(self._middle_box)
+
         elif inp in ('m', 'M'):
             self._main_menu.open()
 

@@ -30,7 +30,7 @@ setup(
     ],
     keywords='wireshark scapy python tcpdump',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    install_requires=['scapy', 'prettytable', 'urwid'],
+    install_requires=['scapy', 'prettytable', 'urwid', 'requests'],
     entry_points={
         'console_scripts': [
             'scapyshark = scapyshark.scapyshark:main',

@@ -2,3 +2,4 @@ scapyshark.egg-info*
 *.pyc
 *.swp
 dist
+*.db

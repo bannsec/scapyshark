@@ -107,18 +107,69 @@ class ScapyShark(object):
             # Did our menu mess up?
             for overlay in self._overlays:
                 if overlay['widget'] in focus_widgets:
-                    overlay['widget'].base_widget.focus_position = (overlay['widget'].base_widget.focus_position + 1) % len(overlay['widget'].base_widget.body)
+                    try:
+                        overlay['widget'].base_widget.focus_position = (overlay['widget'].base_widget.focus_position + 1) % len(overlay['widget'].base_widget.body)
+                    except:
+                        pass
                 
         elif inp == 'up':
             # Did our menu mess up?
             for overlay in self._overlays:
                 if overlay['widget'] in focus_widgets:
-                    overlay['widget'].base_widget.focus_position = (overlay['widget'].base_widget.focus_position - 1) % len(overlay['widget'].base_widget.body)
+                    try:
+                        overlay['widget'].base_widget.focus_position = (overlay['widget'].base_widget.focus_position - 1) % len(overlay['widget'].base_widget.body)
+                    except:
+                        pass
 
     def _pop_overlay(self):
         """ Remove top overlay. """
         overlay = self._overlays.pop()
         self.loop.widget = overlay['previous_widget']
+
+    def _dialogue_ok(self, text, title=None):
+        """Opens a dialogue overlay box with an 'ok' button.
+
+        Args:
+            text (str): Text that should be displayed in the box
+            title (str, optional): Title for the dialogue box
+        """
+
+        # Build the dialogue
+        lines = []
+        for line in text.split('\n'):
+            #menu_items.append(urwid.AttrMap(urwid.Text(item),'frame','selected'))
+            lines.append(urwid.Text(line))
+
+        dialogue = urwid.ListBox(urwid.SimpleFocusListWalker(lines))
+
+        if title is not None:
+            dialogue = urwid.LineBox(dialogue, title=title)
+        else:
+            dialogue = urwid.LineBox(dialogue)
+        dialogue = urwid.AttrMap(dialogue, 'frame')
+
+        ok = urwid.Filler(urwid.Button(u"Ok", on_press=lambda _: self._pop_overlay()))
+
+        dialogue = urwid.Pile([dialogue, (1, ok)], focus_item=0)
+
+        max_width = max(len(x.get_text()[0]) for x in lines)
+        max_width = max(max_width, len(title)) if title is not None else max_width
+
+        height = len(lines) + 3
+
+        overlay = urwid.Overlay(dialogue, self.loop.widget, 'center', max_width+5, 'middle', height)
+
+        # Register that we have it open
+        self._overlays.append({
+            'name': 'Dialogue_ok',
+            'widget': dialogue,
+            'previous_widget': self.loop.widget,
+            'enter_handler': lambda _: 1,
+            })
+
+        # Actually set it
+        self.loop.widget = overlay
+
         
 def main():
     shark = ScapyShark()

@@ -6,6 +6,7 @@ def build_menu(scapyshark):
 
     menu_items = [
         ('DNS', lambda : 1),
+        ('Test Menu', lambda: scapyshark._dialogue_ok('blerg', title='this is my title')),
         ('Close', scapyshark._pop_overlay)
     ]
 

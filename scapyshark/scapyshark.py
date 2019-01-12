@@ -130,15 +130,19 @@ class ScapyShark(object):
         overlay = self._overlays.pop()
         self.loop.widget = overlay['previous_widget']
 
-    def _dialogue_ok(self, text, title=None):
+    def _dialogue_ok(self, text, title=None, edit=None):
         """Opens a dialogue overlay box with an 'ok' button.
 
         Args:
             text (str): Text that should be displayed in the box
             title (str, optional): Title for the dialogue box
+            edit (dict, optional): Contains urwid.Edit options for optional edit box
         """
 
+        #
         # Build the dialogue
+        #
+
         lines = []
         for line in text.split('\n'):
             #menu_items.append(urwid.AttrMap(urwid.Text(item),'frame','selected'))
@@ -146,15 +150,35 @@ class ScapyShark(object):
 
         dialogue = urwid.ListBox(urwid.SimpleFocusListWalker(lines))
 
+        #
+        # Title
+        #
+
         if title is not None:
             dialogue = urwid.LineBox(dialogue, title=title)
         else:
             dialogue = urwid.LineBox(dialogue)
         dialogue = urwid.AttrMap(dialogue, 'frame')
 
+        #
+        # Buttons
+        #
+
         ok = urwid.Filler(urwid.Button(u"Ok", on_press=lambda _: self._pop_overlay()))
 
-        dialogue = urwid.Pile([dialogue, (1, ok)], focus_item=0)
+        my_pile = [dialogue]
+
+        #
+        # Edit
+        #
+
+        if edit is not None:
+            edit = urwid.Edit(**edit)
+            my_pile.append(edit)
+
+        my_pile.append((1,ok))
+
+        dialogue = urwid.Pile(my_pile, focus_item=0)
 
         max_width = max(len(x.get_text()[0]) for x in lines)
         max_width = max(max_width, len(title)) if title is not None else max_width

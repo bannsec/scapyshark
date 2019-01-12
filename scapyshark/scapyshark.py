@@ -121,6 +121,10 @@ class ScapyShark(object):
                     except:
                         pass
 
+        elif inp == 'f11':
+            import IPython
+            IPython.embed()
+
     def _pop_overlay(self):
         """ Remove top overlay. """
         overlay = self._overlays.pop()

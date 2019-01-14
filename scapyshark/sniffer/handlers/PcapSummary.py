@@ -11,7 +11,7 @@ def handle(sniffer, packet):
     elif packet.haslayer(scapy.layers.inet.UDP):
         count_udp += 1
 
-    elif packet.haslayer(scapy.layers.inet.ARP):
+    elif packet.haslayer(scapy.layers.all.ARP):
         count_arp += 1
 
     else:

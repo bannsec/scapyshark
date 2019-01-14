@@ -130,7 +130,7 @@ class ScapyShark(object):
         overlay = self._overlays.pop()
         self.loop.widget = overlay['previous_widget']
 
-    def _dialogue_general(self, text, title=None, edit=None, buttons=None):
+    def _dialogue_general(self, text, title=None, edit=None, buttons=None, edit_enter_handler=None):
         """Opens a dialogue overlay box with an 'ok' button.
 
         Args:
@@ -138,7 +138,16 @@ class ScapyShark(object):
             title (str, optional): Title for the dialogue box
             edit (dict, optional): Contains urwid.Edit options for optional edit box
             buttons (list, optional): List of buttons to use in dialogue. If not specified, generic 'OK' button will be used.
+            edit_enter_handler (function, optional): If you want your edit box to have a handler when the user presses enter, put the function here.
         """
+
+        def __edit_enter_handler(widget, text, handler):
+
+            # TODO: For now just assume if \n is in the text, then enter has been pressed.
+            if '\n' in widget.get_edit_text():
+                handler(text.strip())
+                self._pop_overlay()
+
 
         #
         # Build the dialogue
@@ -157,7 +166,13 @@ class ScapyShark(object):
 
         if edit is not None:
             edit = urwid.Edit(**edit)
+
+            # If we want an enter handler
+            if edit_enter_handler is not None:
+                urwid.connect_signal(edit, 'postchange', __edit_enter_handler, edit_enter_handler)
+
             dialogue.body.append(edit)
+
 
         #
         # Title

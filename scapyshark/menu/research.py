@@ -7,7 +7,7 @@ def build_menu(scapyshark):
     edit = {
         'caption': 'What you say: ',
         'edit_text': 'This is the edit text',
-        'multiline': False,
+        'multiline': True,
         'align': 'left',
         'allow_tab': False,
     }
@@ -17,9 +17,12 @@ def build_menu(scapyshark):
     buttons.append(urwid.Button('No'))
     buttons.append(urwid.Button('Cancel', on_press= lambda _: scapyshark._pop_overlay()))
 
+    def blerg(x):
+        pass
+
     menu_items = [
         ('DNS', lambda : 1),
-        ('Test Menu', lambda: scapyshark._dialogue_general('blerg', title='this is my title', edit=edit, buttons=buttons)),
+        ('Test Menu', lambda: scapyshark._dialogue_general('blerg', title='this is my title', edit=edit, buttons=buttons, edit_enter_handler=blerg)),
         ('Close', scapyshark._pop_overlay)
     ]
 

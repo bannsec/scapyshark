@@ -130,7 +130,7 @@ class ScapyShark(object):
         overlay = self._overlays.pop()
         self.loop.widget = overlay['previous_widget']
 
-    def _dialogue_ok(self, text, title=None, edit=None):
+    def _dialogue_general(self, text, title=None, edit=None):
         """Opens a dialogue overlay box with an 'ok' button.
 
         Args:

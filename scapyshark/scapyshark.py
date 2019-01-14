@@ -130,13 +130,14 @@ class ScapyShark(object):
         overlay = self._overlays.pop()
         self.loop.widget = overlay['previous_widget']
 
-    def _dialogue_general(self, text, title=None, edit=None):
+    def _dialogue_general(self, text, title=None, edit=None, buttons=None):
         """Opens a dialogue overlay box with an 'ok' button.
 
         Args:
             text (str): Text that should be displayed in the box
             title (str, optional): Title for the dialogue box
             edit (dict, optional): Contains urwid.Edit options for optional edit box
+            buttons (list, optional): List of buttons to use in dialogue. If not specified, generic 'OK' button will be used.
         """
 
         #
@@ -172,13 +173,16 @@ class ScapyShark(object):
         # Buttons
         #
 
-        ok = urwid.Filler(urwid.Button(u"Ok", on_press=lambda _: self._pop_overlay()))
+        # General handler
+        if buttons is None:
+            ok = urwid.Button(u"Ok", on_press=lambda _: self._pop_overlay())
+            buttons = urwid.Filler(urwid.Columns([ok]))
 
-        my_pile = [dialogue]
+        else:
+            # Use user's buttons
+            buttons = urwid.Filler(urwid.Columns(buttons))
 
-
-        my_pile.append((1,ok))
-
+        my_pile = [dialogue, (1, buttons)]
         dialogue = urwid.Pile(my_pile, focus_item=0)
 
         max_width = max(len(x.get_text()[0]) for x in lines)

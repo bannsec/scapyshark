@@ -151,6 +151,14 @@ class ScapyShark(object):
         dialogue = urwid.ListBox(urwid.SimpleFocusListWalker(lines))
 
         #
+        # Edit
+        #
+
+        if edit is not None:
+            edit = urwid.Edit(**edit)
+            dialogue.body.append(edit)
+
+        #
         # Title
         #
 
@@ -168,13 +176,6 @@ class ScapyShark(object):
 
         my_pile = [dialogue]
 
-        #
-        # Edit
-        #
-
-        if edit is not None:
-            edit = urwid.Edit(**edit)
-            my_pile.append(edit)
 
         my_pile.append((1,ok))
 
@@ -184,6 +185,15 @@ class ScapyShark(object):
         max_width = max(max_width, len(title)) if title is not None else max_width
 
         height = len(lines) + 3
+
+        if edit is not None:
+            # Edit will be another row
+            height += 1
+
+            # Edit might have longer text?
+            text_len = 0 if edit.caption is None else len(edit.caption)
+            text_len = text_len if edit.edit_text is None else text_len + len(edit.edit_text)
+            max_width = max(max_width, text_len + 1)
 
         overlay = urwid.Overlay(dialogue, self.loop.widget, 'center', max_width+5, 'middle', height)
 

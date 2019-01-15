@@ -42,7 +42,7 @@ def build_menu(scapyshark):
 
 def save_to_pcap_handler(file_name):
     file_name = os.path.abspath(file_name)
-    scapy.all.wrpcap(file_name, packets, gz=1)
+    scapy.all.wrpcap(file_name, packets, gz=False)
 
 def save_to_pcap_button_handler(button, scapyshark):
     edit_text = scapyshark._dialogue_general_get_edit_text()

@@ -20,7 +20,7 @@ def handle(sniffer, packet):
 
         # We're going to be streaming, setup for it
         write_path = os.path.abspath(sniffer._write_stream)
-        write_object = scapy.utils.PcapWriter(write_path, gz=True)
+        write_object = scapy.utils.PcapWriter(write_path, gz=False)
 
     # Time to write
     if write_object is not None:

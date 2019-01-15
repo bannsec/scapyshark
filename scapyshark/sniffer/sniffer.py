@@ -28,8 +28,8 @@ class Sniffer(object):
 
         # Should we be streaming pcap write to file and, if so, where
         self._write_stream = shark._args.w
-        
         self._read_pcap = shark._args.r
+        self._max_count = shark._args.c
 
         if shutil.which('tshark') is None:
             logger.warn('tshark is not installed. No enrichment will be done.')
@@ -43,7 +43,8 @@ class Sniffer(object):
         kwargs={'store': False,
                 'prn': self._handle_new_packet,
                 'filter': ' '.join(self._shark._args.expression),
-                'offline': self._read_pcap
+                'offline': self._read_pcap,
+                'count': self._max_count
                 }
 
         sniffer = Thread(target=scapy.all.sniff, kwargs=kwargs)

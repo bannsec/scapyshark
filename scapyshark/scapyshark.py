@@ -35,6 +35,8 @@ class ScapyShark(object):
             )
         parser.add_argument('expression', type=str, nargs='*', default=None,
                 help="BPF Capture Filter. Example: not tcp port 22 and host 127.0.0.1")
+        parser.add_argument('-c', metavar='count', type=int, default=0,
+                help='Stop capturing after receiving this many packets (defaults to infinity).')
         parser.add_argument('-r', metavar='filename', type=str, default=None,
                 help='Read from pcap instead of sniffing on an interface.')
         parser.add_argument('-w', metavar='filename', type=str, default=False,

@@ -30,6 +30,7 @@ class Sniffer(object):
         self._write_stream = shark._args.w
         self._read_pcap = shark._args.r
         self._max_count = shark._args.c
+        self._timeout = shark._args.t
 
         if shutil.which('tshark') is None:
             logger.warn('tshark is not installed. No enrichment will be done.')
@@ -44,7 +45,8 @@ class Sniffer(object):
                 'prn': self._handle_new_packet,
                 'filter': ' '.join(self._shark._args.expression),
                 'offline': self._read_pcap,
-                'count': self._max_count
+                'count': self._max_count,
+                'timeout': self._timeout,
                 }
 
         sniffer = Thread(target=scapy.all.sniff, kwargs=kwargs)

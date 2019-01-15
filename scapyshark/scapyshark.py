@@ -39,6 +39,8 @@ class ScapyShark(object):
                 help='Stop capturing after receiving this many packets (defaults to infinity).')
         parser.add_argument('-r', metavar='filename', type=str, default=None,
                 help='Read from pcap instead of sniffing on an interface.')
+        parser.add_argument('-t', metavar='timeout', type=int, default=None,
+                help='Stop parsing packets after timeout seconds have passed.')
         parser.add_argument('-w', metavar='filename', type=str, default=False,
                 help='Write packets to pcap file while displaying.')
         self._args = parser.parse_args()

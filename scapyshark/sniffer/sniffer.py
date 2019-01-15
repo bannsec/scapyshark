@@ -26,6 +26,9 @@ class Sniffer(object):
 
         self._shark = shark
 
+        # Should we be streaming pcap write to file and, if so, where
+        self._write_stream = shark._args.w
+
         if shutil.which('tshark') is None:
             logger.warn('tshark is not installed. No enrichment will be done.')
             self._notshark = True

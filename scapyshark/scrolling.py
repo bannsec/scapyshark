@@ -31,3 +31,25 @@ class ScrollingListBox(ListBox):
     def get_packet(self, message):
         """ Given message, return the corresponding packet. """
         return self.packets[self.walker.index(message)]
+
+    def _keypress_up(self, size):
+        # TODO: Not sure why key up is failing like this... Really need to figure out root cause
+        #out = super(ScrollingListBox, self)._keypress_up(size)
+        
+        try:
+            self.set_focus(self.walker.prev_position(self.walker.focus))
+            return None # No more handling needed
+        except IndexError:
+            # IndexError is expected when we're at the top of the list
+            return True
+
+    def _keypress_down(self, size):
+        # TODO: Not sure why key up is failing like this... Really need to figure out root cause (jumping down a page before incrementing down)
+        
+        try:
+            self.set_focus(self.walker.next_position(self.walker.focus))
+            return None # No more handling needed
+        except IndexError:
+            # IndexError is expected when we're at the top of the list
+            return True
+

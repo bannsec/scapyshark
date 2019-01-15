@@ -24,6 +24,7 @@ class ScrollingListBox(ListBox):
         if isinstance(currently_selected, (list, tuple)):
             currently_selected = currently_selected[0]
         
+        # This ensures auto scrolling only engages if our selected item is the bottom one
         if len(self.walker) <= 1 or currently_selected is self.walker[-2]:
             self.set_focus(len(self.walker)-1)
 

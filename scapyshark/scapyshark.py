@@ -130,6 +130,10 @@ class ScapyShark(object):
         overlay = self._overlays.pop()
         self.loop.widget = overlay['previous_widget']
 
+    def _dialogue_general_get_edit_text(self):
+        """str: Helper function to grab the edit text from the currently opened dialogue_general box."""
+        return self._overlays[-1]['edit_box'].get_edit_text()
+
     def _dialogue_general(self, text, title=None, edit=None, buttons=None, edit_enter_handler=None):
         """Opens a dialogue overlay box with an 'ok' button.
 
@@ -222,6 +226,7 @@ class ScapyShark(object):
             'widget': dialogue,
             'previous_widget': self.loop.widget,
             'enter_handler': lambda _: 1,
+            'edit_box': edit
             })
 
         # Actually set it

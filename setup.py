@@ -30,7 +30,8 @@ setup(
     ],
     keywords='wireshark scapy python tcpdump',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    install_requires=['scapy', 'prettytable', 'urwid', 'requests', 'pexpect'],
+    # Using github version since pypi version is old and dns responses are broken in it
+    install_requires=['scapy @ https://github.com/secdev/scapy/archive/master.zip', 'prettytable', 'urwid', 'requests', 'pexpect'],
     entry_points={
         'console_scripts': [
             'scapyshark = scapyshark.scapyshark:main',

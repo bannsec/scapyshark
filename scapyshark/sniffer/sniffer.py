@@ -8,10 +8,14 @@ import pexpect
 import atexit
 import os
 import struct
-from time import time
+from time import time, sleep
 import json
 import collections
 import shutil
+import subprocess
+import random
+import multiprocessing
+import itertools
 
 TSHARK_PIPE = '/tmp/scapyshark.pipe'
 
@@ -38,6 +42,12 @@ class Sniffer(object):
         else:
             self._init_tshark()
             self._notshark = False
+
+        # Channel hop will be it's own process
+        if shark._args.channel_hop is not None:
+            p = multiprocessing.Process(target=self._start_channel_hop, args=[shark._args.channel_hop])
+            p.daemon = True
+            p.start()
         
     def start(self):
         """ Start sniffing. """
@@ -46,12 +56,25 @@ class Sniffer(object):
                 'filter': ' '.join(self._shark._args.expression),
                 'offline': self._read_pcap,
                 'count': self._max_count,
-                'timeout': self._timeout,
+                'timeout': self._timeout
                 }
 
         sniffer = Thread(target=scapy.all.sniff, kwargs=kwargs)
         sniffer.daemon = True
         sniffer.start()
+
+    def _start_channel_hop(self, interface):
+        # TODO: Verify interface exists first
+        
+        channels = list(range(1,13))
+        random.shuffle(channels) # Random channel hop order
+        channels_cycle = itertools.cycle(channels)
+
+        while True:
+            channel = next(channels_cycle)
+            subprocess.call(['sudo', 'iwconfig', interface, 'channel', str(channel)]) 
+            sleep(1)
+
 
     def _init_tshark(self):
         """ Setup tshark for parsing more info. """

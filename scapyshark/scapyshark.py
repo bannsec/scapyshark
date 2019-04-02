@@ -45,6 +45,8 @@ class ScapyShark(object):
                 help='Write packets to pcap file while displaying.')
         parser.add_argument('--rolling-packet-buffer', metavar='max', type=int, default=None,
                 help='(optional) How many packets to store in buffer at a time (default: unlimited)')
+        parser.add_argument('--channel-hop', metavar='interface', type=str, default=None,
+                help='(optional) Interface to channel hop on (default: no channel hopping)')
         self._args = parser.parse_args()
 
 

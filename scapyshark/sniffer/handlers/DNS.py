@@ -110,6 +110,7 @@ def handle(sniffer, packet):
     if packet.haslayer(scapy.layers.dns.DNSQR):
         insert_query_record(sniffer, packet)
 
+    # Generic call to update things or not
     for updater in windows_updates:
         updater(sniffer._shark)
 

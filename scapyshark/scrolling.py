@@ -4,9 +4,16 @@ import scapy
 
 class ScrollingListBox(ListBox):
 
-    def __init__(self):
+    def __init__(self, rolling_packet_buffer=None):
+        """
+        
+        Args:
+            rolling_packet_buffer (int, optional): Max packets to
+                keep in the rolling buffer at a time. Defaults to unlimited.
+        """
         self.walker = SimpleFocusListWalker([])
         self.packets = scapy.plist.PacketList()
+        self.rolling_packet_buffer = rolling_packet_buffer
         super(ScrollingListBox, self).__init__(self.walker)
 
     def add(self, message, packet):
@@ -19,6 +26,10 @@ class ScrollingListBox(ListBox):
         txt = AttrMap(Text(message), 'frame', 'selected')
         self.walker.append(txt)
         self.packets.append(packet)
+
+        if self.rolling_packet_buffer is not None and len(self.walker) > self.rolling_packet_buffer:
+            self.packets.pop(0)
+            self.walker.pop(0)
 
         currently_selected = self.get_focus()
         if isinstance(currently_selected, (list, tuple)):

@@ -43,6 +43,8 @@ class ScapyShark(object):
                 help='Stop parsing packets after timeout seconds have passed.')
         parser.add_argument('-w', metavar='filename', type=str, default=False,
                 help='Write packets to pcap file while displaying.')
+        parser.add_argument('--rolling-packet-buffer', metavar='max', type=int, default=None,
+                help='(optional) How many packets to store in buffer at a time (default: unlimited)')
         self._args = parser.parse_args()
 
 
@@ -52,7 +54,7 @@ class ScapyShark(object):
         self._footer_box = urwid.BoxAdapter(urwid.AttrMap(urwid.Filler(urwid.Text('No Packets Yet.', align='right')), 'header'), 1)
 
         # Body
-        self._top_box = ScrollingListBox()
+        self._top_box = ScrollingListBox(rolling_packet_buffer=self._args.rolling_packet_buffer)
         self._middle_box = urwid.ListBox(urwid.SimpleFocusListWalker([urwid.Text('')]))
         self._bottom_box = urwid.ListBox(urwid.SimpleFocusListWalker([urwid.Text('')]))
         

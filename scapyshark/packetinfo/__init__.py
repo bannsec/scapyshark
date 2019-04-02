@@ -20,7 +20,7 @@ def show_packet_info(scapyshark, packet):
 
     scapyshark._bottom_box.base_widget.body.clear()
 
-    b = bytes(packet)
+    b = bytes(packet) # Scapy is messing this up... It keeps adding trailing data: https://github.com/secdev/scapy/issues/1969
     first_line = 0
 
     for i in range(0, len(b), 16):

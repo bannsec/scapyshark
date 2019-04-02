@@ -21,7 +21,7 @@ def build_menu(scapyshark):
         pass
 
     menu_items = [
-        ('DNS', lambda : 1),
+        ('DNS', lambda: DNS._window_show_dns_summary(scapyshark)),
         ('Test Menu', lambda: scapyshark._dialogue_general('blerg', title='this is my title', edit=edit, buttons=buttons, edit_enter_handler=blerg)),
         ('Close', scapyshark._pop_overlay)
     ]
@@ -30,3 +30,4 @@ def build_menu(scapyshark):
     return menu
 
 import urwid
+from ..sniffer.handlers import DNS

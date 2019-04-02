@@ -23,7 +23,8 @@ class MenuBase(object):
             'name': 'Main Menu',
             'widget': self._menu,
             'previous_widget': self._scapyshark.loop.widget,
-            'enter_handler': self.enter_handler
+            'enter_handler': self.enter_handler,
+            'close_handler': lambda _: 1,
             })
 
         # Actually set it

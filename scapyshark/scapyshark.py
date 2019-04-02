@@ -129,7 +129,7 @@ class ScapyShark(object):
                     except:
                         pass
 
-        elif inp == 'f11':
+        elif inp == 'f11' or inp == 'd':
             import IPython
             IPython.embed()
 
@@ -137,20 +137,22 @@ class ScapyShark(object):
         """ Remove top overlay. """
         overlay = self._overlays.pop()
         self.loop.widget = overlay['previous_widget']
+        overlay['close_handler'](self)
 
     def _dialogue_general_get_edit_text(self):
         """str: Helper function to grab the edit text from the currently opened dialogue_general box."""
         return self._overlays[-1]['edit_box'].get_edit_text()
 
-    def _dialogue_general(self, text, title=None, edit=None, buttons=None, edit_enter_handler=None):
+    def _dialogue_general(self, text, title=None, edit=None, buttons=None, edit_enter_handler=None, close_handler=None):
         """Opens a dialogue overlay box with an 'ok' button.
 
         Args:
-            text (str): Text that should be displayed in the box
+            text (str, urwid.ListBox): Text that should be displayed in the box or the dialogue object to use instead
             title (str, optional): Title for the dialogue box
             edit (dict, optional): Contains urwid.Edit options for optional edit box
             buttons (list, optional): List of buttons to use in dialogue. If not specified, generic 'OK' button will be used.
             edit_enter_handler (function, optional): If you want your edit box to have a handler when the user presses enter, put the function here.
+            close_handler (function, optional): Any code you want called when the dialogue box is closed.
         """
 
         def __edit_enter_handler(widget, text, handler):
@@ -165,12 +167,19 @@ class ScapyShark(object):
         # Build the dialogue
         #
 
-        lines = []
-        for line in text.split('\n'):
-            #menu_items.append(urwid.AttrMap(urwid.Text(item),'frame','selected'))
-            lines.append(urwid.Text(line))
+        # If we don't already have the widget, build it
+        if not isinstance(text, urwid.listbox.ListBox):
 
-        dialogue = urwid.ListBox(urwid.SimpleFocusListWalker(lines))
+            lines = []
+            for line in text.split('\n'):
+                #menu_items.append(urwid.AttrMap(urwid.Text(item),'frame','selected'))
+                lines.append(urwid.Text(line))
+
+            dialogue = urwid.ListBox(urwid.SimpleFocusListWalker(lines))
+
+        else:
+            dialogue = text
+            lines = list(dialogue.base_widget.body)
 
         #
         # Edit
@@ -234,7 +243,8 @@ class ScapyShark(object):
             'widget': dialogue,
             'previous_widget': self.loop.widget,
             'enter_handler': lambda _: 1,
-            'edit_box': edit
+            'edit_box': edit,
+            'close_handler': close_handler if close_handler is not None else lambda _: 1,
             })
 
         # Actually set it

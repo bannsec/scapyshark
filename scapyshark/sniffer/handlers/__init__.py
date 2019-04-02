@@ -12,6 +12,7 @@ handlers = (
         PcapWriteStream.handle,
         PcapList.handle,
         PcapSummary.handle,
+        DNS.handle,
         )
 
 def run_all_handlers(sniffer, packet):

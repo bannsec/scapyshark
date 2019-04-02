@@ -31,7 +31,8 @@ setup(
     keywords='wireshark scapy python tcpdump',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     # Using github version since pypi version is old and dns responses are broken in it
-    install_requires=['scapy @ https://github.com/secdev/scapy/archive/master.zip', 'prettytable', 'urwid', 'requests', 'pexpect'],
+    # Need latest version of prettytable for max_table variables and printing
+    install_requires=['scapy @ https://github.com/secdev/scapy/archive/master.zip', 'prettytable @ https://github.com/jazzband/prettytable/archive/master.zip', 'urwid', 'requests', 'pexpect'],
     entry_points={
         'console_scripts': [
             'scapyshark = scapyshark.scapyshark:main',

@@ -8,14 +8,14 @@ import requests
 from zipfile import ZipFile
 from io import BytesIO
 import scapy
-import threading
 import urwid
 from prettytable import PrettyTable
+from ...modules import db
 
 here = os.path.dirname(os.path.realpath(__file__))
 
 create_dns_db = """
-CREATE TABLE requests (
+CREATE TABLE dns_requests (
     requester text NOT NULL,
     resolver text NOT NULL,
     name text NOT NULL,
@@ -26,18 +26,13 @@ CREATE TABLE requests (
 def init():
     global conn
     global discovered_dns_db
-    global db_lock
     global window_dns_summary
     global windows_updates
 
     windows_updates = []
 
-    db_lock = threading.Lock()
-
     # Init our discovered dns to nothing
-    discovered_dns_db = sqlite3.connect(':memory:', check_same_thread=False)
-    discovered_dns_db.row_factory = sqlite3.Row
-    safe_db_query(create_dns_db)
+    db.execute(create_dns_db)
 
     logger.info('Performing init.')
 
@@ -58,19 +53,7 @@ def init():
         build_umbrella_table()
 
     window_dns_summary = urwid.ListBox(urwid.SimpleFocusListWalker([urwid.Text('Nothing yet...')]))
-
-def safe_db_query(query, args=None, fetch_all=False):
-    """Safely (via lock) do the query."""
-
-    if args is None:
-        args = tuple()
-
-    with db_lock:
-        c = discovered_dns_db.cursor()
-        c.execute(query, args)
-
-        if fetch_all:
-            return c.fetchall()
+    c.close()
 
 def insert_query_record(sniffer, packet):
 
@@ -97,7 +80,7 @@ def insert_query_record(sniffer, packet):
         else:
             args = (ip.src, ip.dst, dnsqr.qname.strip(b'.'))
 
-        safe_db_query("INSERT OR IGNORE INTO requests (requester, resolver, name) VALUES (?, ?, ?)", args)
+        db.execute("INSERT OR IGNORE INTO dns_requests (requester, resolver, name) VALUES (?, ?, ?)", args)
         i += 1
 
 def _should_i_handle_this(sniffer, packet):
@@ -152,6 +135,7 @@ def build_umbrella_table():
     c = conn.cursor()
     c.execute('''VACUUM''')
     conn.commit()
+    c.close()
 
     print('OK')
 
@@ -162,7 +146,9 @@ def check_umbrella(dns):
 
     try:
         r = next(c)
+        c.close()
     except:
+        c.close()
         # This domain name wasn't found
         return None
 
@@ -186,7 +172,7 @@ def _window_close_dns_summary(scapyshark):
 def _window_update_dns_summary(scapyshark):
     """Update the dns summary window with the current information."""
 
-    rows = safe_db_query('SELECT requester, resolver, group_concat(name, ", ") FROM requests GROUP BY requester, resolver', fetch_all=True)
+    rows = db.execute('SELECT requester, resolver, group_concat(name, ", ") FROM dns_requests GROUP BY requester, resolver', fetch_all=True)
     table = PrettyTable(['Requester', 'Resolver', 'Names'])
     table.border = False
     table.align['Requester'] = 'l'

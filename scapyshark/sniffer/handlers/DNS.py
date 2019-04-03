@@ -100,11 +100,23 @@ def insert_query_record(sniffer, packet):
         safe_db_query("INSERT OR IGNORE INTO requests (requester, resolver, name) VALUES (?, ?, ?)", args)
         i += 1
 
+def _should_i_handle_this(sniffer, packet):
+    # Only interested in DNS
+    if not packet.haslayer(scapy.layers.dns.DNS):
+        return False
+
+    layer = packet[scapy.layers.inet.UDP] if packet.haslayer(scapy.layers.inet.UDP) else packet[scapy.layers.inet.TCP]
+
+    # Only normal DNS... No MDNS
+    if layer.sport != 53 and layer.dport != 53:
+        return False
+
+    return True
+
 
 def handle(sniffer, packet):
 
-    # Only interested in DNS
-    if not packet.haslayer(scapy.layers.dns.DNS):
+    if not _should_i_handle_this(sniffer, packet):
         return
 
     if packet.haslayer(scapy.layers.dns.DNSQR):

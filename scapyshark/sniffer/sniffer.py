@@ -72,6 +72,7 @@ class Sniffer(object):
 
         while True:
             channel = next(channels_cycle)
+            # TODO: Check if we need sudo and only add it if needed.
             subprocess.call(['sudo', 'iwconfig', interface, 'channel', str(channel)]) 
             sleep(1)
 

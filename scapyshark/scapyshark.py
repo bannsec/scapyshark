@@ -47,6 +47,8 @@ class ScapyShark(object):
                 help='(optional) How many packets to store in buffer at a time (default: unlimited)')
         parser.add_argument('--channel-hop', metavar='interface', type=str, default=None,
                 help='(optional) Interface to channel hop on (default: no channel hopping)')
+        parser.add_argument('--lfilter', metavar='python_code', type=str, default=None,
+                help='(optional) Python capture filter (i.e.: "scapy.layers.dot11.Dot11Beacon in packet"')
         self._args = parser.parse_args()
 
 

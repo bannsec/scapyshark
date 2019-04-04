@@ -51,12 +51,17 @@ class Sniffer(object):
         
     def start(self):
         """ Start sniffing. """
+        lfilter = None
+        if self._shark._args.lfilter is not None:
+            lfilter = lambda packet: eval(self._shark._args.lfilter)
+
         kwargs={'store': False,
                 'prn': self._handle_new_packet,
                 'filter': ' '.join(self._shark._args.expression),
                 'offline': self._read_pcap,
                 'count': self._max_count,
-                'timeout': self._timeout
+                'timeout': self._timeout,
+                'lfilter': lfilter,
                 }
 
         sniffer = Thread(target=scapy.all.sniff, kwargs=kwargs)

@@ -41,6 +41,11 @@ def tables():
     rows = execute("SELECT name FROM sqlite_master WHERE type='table';", fetch_all=True)
     return [row['name'] for row in rows]
 
+def databases():
+    """Returns list of databases."""
+    rows = execute("PRAGMA database_list", fetch_all=True)
+    return [(row['name'], row['file']) for row in rows]
+
 def print_table(table):
     """Print out ascii table dump of the given table."""
     rows = execute("SELECT * FROM {}".format(table), fetch_all=True)

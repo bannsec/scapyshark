@@ -52,7 +52,7 @@ def record_ssid(ssid, bssid):
 
 class WindowAPSummary(Window):
     def update(self):
-        rows = db.execute("SELECT * FROM dot11_ap", fetch_all=True)
+        rows = db.execute("SELECT * FROM dot11_ap ORDER BY ssid", fetch_all=True)
 
         if rows == []:
             return

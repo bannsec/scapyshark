@@ -1,8 +1,12 @@
 
 from . import MenuBase
+from ..sniffer.handlers.DNS import WindowDNSSummary
 
 def build_menu(scapyshark):
     global menu
+    global window_dns_summary
+
+    window_dns_summary = WindowDNSSummary(scapyshark, title="DNS Summary", update_on='DNS')
 
     dot11_submenu = dot11.build_menu(scapyshark)
 
@@ -23,7 +27,7 @@ def build_menu(scapyshark):
         pass
 
     menu_items = [
-        ('DNS', lambda: DNS._window_show_dns_summary(scapyshark)),
+        ('DNS', window_dns_summary.show),
         ('802.11', dot11_submenu.open),
         ('Test Menu', lambda: scapyshark._dialogue_general('blerg', title='this is my title', edit=edit, buttons=buttons, edit_enter_handler=blerg)),
         ('Close', scapyshark._pop_overlay)

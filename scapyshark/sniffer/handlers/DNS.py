@@ -11,6 +11,7 @@ import scapy
 import urwid
 from prettytable import PrettyTable
 from ...modules import db
+from ...window import Window
 
 here = os.path.dirname(os.path.realpath(__file__))
 
@@ -27,9 +28,6 @@ def init():
     global conn
     global discovered_dns_db
     global window_dns_summary
-    global windows_updates
-
-    windows_updates = []
 
     # Init our discovered dns to nothing
     db.execute(create_dns_db)
@@ -105,9 +103,7 @@ def handle(sniffer, packet):
     if packet.haslayer(scapy.layers.dns.DNSQR):
         insert_query_record(sniffer, packet)
 
-    # Generic call to update things or not
-    for updater in windows_updates:
-        updater(sniffer._shark)
+    Window.notify_updates("DNS")
 
 ############
 # Umbrella #
@@ -158,38 +154,25 @@ def check_umbrella(dns):
 # Windows #
 ###########
 
-def _window_show_dns_summary(scapyshark):
-    global windows_updates
+class WindowDNSSummary(Window):
+    def update(self):
 
-    _window_update_dns_summary(scapyshark)
-    scapyshark._dialogue_general(window_dns_summary, title='DNS Summary', close_handler=_window_close_dns_summary)
-    windows_updates.append(_window_update_dns_summary)
+        rows = db.execute('SELECT requester, resolver, group_concat(name, ", ") FROM dns_requests GROUP BY requester, resolver', fetch_all=True)
+        table = PrettyTable(['Requester', 'Resolver', 'Names'])
+        table.border = False
+        table.align['Requester'] = 'l'
+        table.align['Resolver'] = 'l'
+        table.min_width = 100
+        table.max_table_width = self._scapyshark.loop.screen_size[0]-30
 
-def _window_close_dns_summary(scapyshark):
-    global windows_updates
-    windows_updates.remove(_window_update_dns_summary)
+        for row in rows:
+            table.add_row([row['requester'], row['resolver'], row['group_concat(name, ", ")']])
 
-def _window_update_dns_summary(scapyshark):
-    """Update the dns summary window with the current information."""
+        # Apparently we have nothing
+        if table._rows == []:
+            return
 
-    rows = db.execute('SELECT requester, resolver, group_concat(name, ", ") FROM dns_requests GROUP BY requester, resolver', fetch_all=True)
-    table = PrettyTable(['Requester', 'Resolver', 'Names'])
-    table.border = False
-    table.align['Requester'] = 'l'
-    table.align['Resolver'] = 'l'
-    table.min_width = 100
-    table.max_table_width = scapyshark.loop.screen_size[0]-30
-
-    for row in rows:
-        table.add_row([row['requester'], row['resolver'], row['group_concat(name, ", ")']])
-
-    # Apparently we have nothing
-    if table._rows == []:
-        window_dns_summary.body = [urwid.Text('Nothing yet...')]
-
-    update_popup_box_text(window_dns_summary, str(table))
-
-from ...helpers import update_popup_box_text
+        self._update_box_text(str(table))
 
 try:
     conn

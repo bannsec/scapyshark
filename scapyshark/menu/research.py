@@ -4,6 +4,8 @@ from . import MenuBase
 def build_menu(scapyshark):
     global menu
 
+    dot11_submenu = dot11.build_menu(scapyshark)
+
     edit = {
         'caption': 'What you say: ',
         'edit_text': 'This is the edit text',
@@ -22,6 +24,7 @@ def build_menu(scapyshark):
 
     menu_items = [
         ('DNS', lambda: DNS._window_show_dns_summary(scapyshark)),
+        ('802.11', dot11_submenu.open),
         ('Test Menu', lambda: scapyshark._dialogue_general('blerg', title='this is my title', edit=edit, buttons=buttons, edit_enter_handler=blerg)),
         ('Close', scapyshark._pop_overlay)
     ]
@@ -31,3 +34,4 @@ def build_menu(scapyshark):
 
 import urwid
 from ..sniffer.handlers import DNS
+from . import dot11

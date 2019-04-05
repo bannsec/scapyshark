@@ -1,6 +1,7 @@
 
 import threading
 import sqlite3
+from prettytable import PrettyTable
 
 #
 # General Database Handler
@@ -39,6 +40,21 @@ def tables():
     """Returns list of tables."""
     rows = execute("SELECT name FROM sqlite_master WHERE type='table';", fetch_all=True)
     return [row['name'] for row in rows]
+
+def print_table(table):
+    """Print out ascii table dump of the given table."""
+    rows = execute("SELECT * FROM {}".format(table), fetch_all=True)
+    
+    if rows == []:
+        return
+
+    table = PrettyTable(rows[0].keys())
+
+    for row in rows:
+        table.add_row(list(row))
+
+    print(table)
+
 
 try:
     conn

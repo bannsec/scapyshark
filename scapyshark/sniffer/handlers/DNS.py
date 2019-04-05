@@ -187,28 +187,9 @@ def _window_update_dns_summary(scapyshark):
     if table._rows == []:
         window_dns_summary.body = [urwid.Text('Nothing yet...')]
 
-    i = 0
-    current_len = len(list(window_dns_summary.body))
+    update_popup_box_text(window_dns_summary, str(table))
 
-    for line in str(table).split('\n'):
-        
-        new_line = urwid.Text(line)
-
-        # Attempting to utilizing the 'smarts' in urwid to only update lines that need to be updated
-
-        # Our new table has more rows than the original
-        if i >= current_len:
-            window_dns_summary.body.append(new_line)
-
-        # Changed line
-        elif new_line != window_dns_summary.body[i]:
-            window_dns_summary.body[i] = new_line
-
-        # Line must be the same as old line
-        i += 1
-
-    # Remove any excess lines
-    del window_dns_summary.body[i:]
+from ...helpers import update_popup_box_text
 
 try:
     conn

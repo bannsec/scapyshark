@@ -38,5 +38,6 @@ setup(
             'scapyshark = scapyshark.scapyshark:main',
         ],
     },
+    include_package_data=True,
 )
 

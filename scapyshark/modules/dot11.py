@@ -11,6 +11,7 @@ create_dot11_ap_db = """
 CREATE TABLE dot11_ap (
     ssid text,
     bssid text,
+    oui int,
     PRIMARY KEY (ssid, bssid)
     );
 """
@@ -43,7 +44,9 @@ def record_ssid(ssid, bssid):
     assert isinstance(ssid, bytes), "SSID needs to be type bytes, not {}".format(type(ssid))
     assert isinstance(bssid, bytes), "BSSID needs to be type bytes, not {}".format(type(bssid))
     
-    db.execute('INSERT OR IGNORE INTO dot11_ap (ssid, bssid) VALUES (?, ?)', (ssid, bssid))
+    db.execute('INSERT OR IGNORE INTO dot11_ap (ssid, bssid, oui) VALUES (?, ?, ?)',
+            (ssid, bssid, int(bssid.replace(b":",b"")[:6],16)))
+
     Window.notify_updates("Dot11")
 
 ###########
@@ -52,7 +55,7 @@ def record_ssid(ssid, bssid):
 
 class WindowAPSummary(Window):
     def update(self):
-        rows = db.execute("SELECT * FROM dot11_ap ORDER BY ssid", fetch_all=True)
+        rows = db.execute("SELECT ssid, bssid, name AS oui_vendor FROM dot11_ap LEFT JOIN oui_lookup WHERE dot11_ap.oui == oui_lookup.prefix ORDER BY ssid", fetch_all=True)
 
         if rows == []:
             return
@@ -67,7 +70,10 @@ class WindowAPSummary(Window):
             if ssid == '':
                 ssid = "<hidden>"
 
-            table.add_row([ssid, row['bssid'].decode('utf-8', errors='replace')])
+            bssid = row['bssid'].decode('utf-8', errors='replace')
+            bssid += " ({})".format(row['oui_vendor'])
+
+            table.add_row([ssid, bssid])
 
         self._update_box_text(str(table))
 

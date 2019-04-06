@@ -65,3 +65,6 @@ try:
     conn
 except:
     init()
+
+# This is to ensure we load up the oui.db file
+from . import oui

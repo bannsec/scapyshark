@@ -11,8 +11,9 @@ create_dot11_ap_db = """
 CREATE TABLE dot11_ap (
     ssid text,
     bssid text,
+    channel smallint,
     oui int,
-    PRIMARY KEY (ssid, bssid)
+    PRIMARY KEY (ssid, bssid, channel)
     );
 """
 
@@ -40,14 +41,26 @@ try:
 except:
     init()
 
-def record_ssid(ssid, bssid):
+def record_ssid(ssid, bssid, frequency):
     assert isinstance(ssid, bytes), "SSID needs to be type bytes, not {}".format(type(ssid))
     assert isinstance(bssid, bytes), "BSSID needs to be type bytes, not {}".format(type(bssid))
-    
-    db.execute('INSERT OR IGNORE INTO dot11_ap (ssid, bssid, oui) VALUES (?, ?, ?)',
-            (ssid, bssid, int(bssid.replace(b":",b"")[:6],16)))
+    assert isinstance(frequency, int), "Frequency needs to be integer, not {}".format(type(frequency))
 
-    Window.notify_updates("Dot11")
+    if frequency in dot11_types.dot11_type_channels:
+        channel = dot11_types.dot11_type_channels[frequency]
+
+    else:
+        channel = min(dot11_types.dot11_type_channels, key=lambda x:abs(x-frequency))
+    
+    updated = db.execute('INSERT OR IGNORE INTO dot11_ap (ssid, bssid, oui, channel) VALUES (?, ?, ?, ?)',
+            (ssid,
+            bssid,
+            int(bssid.replace(b":",b"")[:6],16),
+            channel
+            ))
+
+    if updated != 0:
+        Window.notify_updates("Dot11")
 
 ###########
 # Windows #
@@ -55,15 +68,16 @@ def record_ssid(ssid, bssid):
 
 class WindowAPSummary(Window):
     def update(self):
-        rows = db.execute("SELECT ssid, bssid, name AS oui_vendor FROM dot11_ap LEFT JOIN oui_lookup WHERE dot11_ap.oui == oui_lookup.prefix ORDER BY ssid", fetch_all=True)
+        rows = db.execute("SELECT ssid, bssid, group_concat(channel, ', ') AS channels, name AS oui_vendor FROM dot11_ap LEFT JOIN oui_lookup ON dot11_ap.oui = oui_lookup.prefix GROUP BY ssid, bssid ORDER BY ssid", fetch_all=True)
 
         if rows == []:
             return
         
-        table = PrettyTable(['SSID', 'BSSID'])
+        table = PrettyTable(['SSID', 'BSSID', 'Channel'])
         table.border = False
         table.align['SSID'] = 'l'
         table.align['BSSID'] = 'l'
+        table.align['Channel'] = 'l'
         
         for row in rows:
             ssid = row['ssid'].decode('utf-8', errors='replace')
@@ -71,9 +85,14 @@ class WindowAPSummary(Window):
                 ssid = "<hidden>"
 
             bssid = row['bssid'].decode('utf-8', errors='replace')
-            bssid += " ({})".format(row['oui_vendor'])
 
-            table.add_row([ssid, bssid])
+            if row['oui_vendor'] is not None:
+                bssid += " ({})".format(row['oui_vendor'])
+
+            channel = row['channels']
+
+            table.add_row([ssid, bssid, channel])
 
         self._update_box_text(str(table))
 
+from . import dot11_types

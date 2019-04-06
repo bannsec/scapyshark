@@ -32,6 +32,9 @@ def execute(query, args=None, fetch_all=False):
 
         if fetch_all:
             ret = c.fetchall()
+
+        else:
+            ret = c.rowcount
         
         c.close()
         return ret

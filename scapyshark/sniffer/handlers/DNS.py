@@ -64,6 +64,8 @@ def insert_query_record(sniffer, packet):
 
     # Handling possible multi-queries
     i = 0
+    updated = 0
+
     while True:
 
         try:
@@ -78,8 +80,10 @@ def insert_query_record(sniffer, packet):
         else:
             args = (ip.src, ip.dst, dnsqr.qname.strip(b'.'))
 
-        db.execute("INSERT OR IGNORE INTO dns_requests (requester, resolver, name) VALUES (?, ?, ?)", args)
+        updated += db.execute("INSERT OR IGNORE INTO dns_requests (requester, resolver, name) VALUES (?, ?, ?)", args)
         i += 1
+
+    return updated
 
 def _should_i_handle_this(sniffer, packet):
     # Only interested in DNS
@@ -97,13 +101,16 @@ def _should_i_handle_this(sniffer, packet):
 
 def handle(sniffer, packet):
 
+    updated = 0
+
     if not _should_i_handle_this(sniffer, packet):
         return
 
     if packet.haslayer(scapy.layers.dns.DNSQR):
-        insert_query_record(sniffer, packet)
+        updated = insert_query_record(sniffer, packet)
 
-    Window.notify_updates("DNS")
+    if updated != 0:
+        Window.notify_updates("DNS")
 
 ############
 # Umbrella #

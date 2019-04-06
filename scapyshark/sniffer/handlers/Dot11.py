@@ -17,15 +17,14 @@ def handle(sniffer, packet):
         # We didn't handle it
         return
 
-    # Generic call to update things or not
-    #for updater in windows_updates:
-    #    updater(sniffer._shark)
-
 def _handle_dot11beacon(sniffer, packet):
 
     ssid = None
     bssid = packet[scapy.layers.dot11.Dot11FCS].addr2.encode('latin-1')
-    
+
+    # Yes, it's frequency, but scapy shows it as channel atm.
+    frequency = packet[scapy.layers.dot11.RadioTap].Channel
+
     for layer in iter_layers_by_type(packet, scapy.layers.dot11.Dot11Elt, allow_subclass=True):
 
         # If we're looking at the SSID field of the beacon
@@ -40,4 +39,4 @@ def _handle_dot11beacon(sniffer, packet):
     if ssid == b'\x00':
         ssid = b''
 
-    dot11.record_ssid(ssid=ssid, bssid=bssid)
+    dot11.record_ssid(ssid=ssid, bssid=bssid, frequency=frequency)

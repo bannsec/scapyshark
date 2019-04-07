@@ -6,6 +6,7 @@ from . import db
 from ..window import Window
 
 # O'Riely 80211 Wireless Networks Chapter 4
+# https://dox.ipxe.org/ieee80211_8h_source.html
 
 create_dot11_ap_db = """
 CREATE TABLE dot11_ap (
@@ -13,6 +14,8 @@ CREATE TABLE dot11_ap (
     bssid text,
     channel smallint,
     oui int,
+    pairwise_cipher text,
+    group_cipher text,
     PRIMARY KEY (ssid, bssid, channel)
     );
 """
@@ -41,22 +44,18 @@ try:
 except:
     init()
 
-def record_ssid(ssid, bssid, frequency):
+def record_ssid(ssid, bssid, channel, pairwise_cipher, group_cipher):
     assert isinstance(ssid, bytes), "SSID needs to be type bytes, not {}".format(type(ssid))
     assert isinstance(bssid, bytes), "BSSID needs to be type bytes, not {}".format(type(bssid))
-    assert isinstance(frequency, int), "Frequency needs to be integer, not {}".format(type(frequency))
+    assert isinstance(channel, int), "Frequency needs to be integer, not {}".format(type(channel))
 
-    if frequency in dot11_types.dot11_type_channels:
-        channel = dot11_types.dot11_type_channels[frequency]
-
-    else:
-        channel = min(dot11_types.dot11_type_channels, key=lambda x:abs(x-frequency))
-    
-    updated = db.execute('INSERT OR IGNORE INTO dot11_ap (ssid, bssid, oui, channel) VALUES (?, ?, ?, ?)',
+    updated = db.execute('INSERT OR IGNORE INTO dot11_ap (ssid, bssid, oui, channel, pairwise_cipher, group_cipher) VALUES (?, ?, ?, ?, ?, ?)',
             (ssid,
             bssid,
             int(bssid.replace(b":",b"")[:6],16),
-            channel
+            channel,
+            pairwise_cipher,
+            group_cipher
             ))
 
     if updated != 0:
@@ -68,16 +67,17 @@ def record_ssid(ssid, bssid, frequency):
 
 class WindowAPSummary(Window):
     def update(self):
-        rows = db.execute("SELECT ssid, bssid, group_concat(channel, ', ') AS channels, name AS oui_vendor FROM dot11_ap LEFT JOIN oui_lookup ON dot11_ap.oui = oui_lookup.prefix GROUP BY ssid, bssid ORDER BY ssid", fetch_all=True)
+        rows = db.execute("SELECT ssid, bssid, group_concat(channel, ', ') AS channels, name AS oui_vendor, pairwise_cipher, group_cipher FROM dot11_ap LEFT JOIN oui_lookup ON dot11_ap.oui = oui_lookup.prefix GROUP BY ssid, bssid ORDER BY ssid", fetch_all=True)
 
         if rows == []:
             return
         
-        table = PrettyTable(['SSID', 'BSSID', 'Channel'])
+        table = PrettyTable(['SSID', 'BSSID', 'Channel', 'Auth'])
         table.border = False
         table.align['SSID'] = 'l'
         table.align['BSSID'] = 'l'
         table.align['Channel'] = 'l'
+        table.align['Auth'] = 'l'
         
         for row in rows:
             ssid = row['ssid'].decode('utf-8', errors='replace')
@@ -90,8 +90,19 @@ class WindowAPSummary(Window):
                 bssid += " ({})".format(row['oui_vendor'])
 
             channel = row['channels']
+            group_cipher = row['group_cipher']
+            pairwise_cipher = row['pairwise_cipher']
 
-            table.add_row([ssid, bssid, channel])
+            if group_cipher is None and pairwise_cipher is None:
+                auth = "Open"
+
+            elif group_cipher == pairwise_cipher:
+                auth = group_cipher
+
+            else:
+                auth = "G: {}, P: {}".format(group_cipher, pairwise_cipher)
+
+            table.add_row([ssid, bssid, channel, auth])
 
         self._update_box_text(str(table))
 

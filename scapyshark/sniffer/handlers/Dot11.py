@@ -20,16 +20,35 @@ def handle(sniffer, packet):
 def _handle_dot11beacon(sniffer, packet):
 
     ssid = None
-    bssid = packet[scapy.layers.dot11.Dot11FCS].addr2.encode('latin-1')
 
-    # Yes, it's frequency, but scapy shows it as channel atm.
-    frequency = packet[scapy.layers.dot11.RadioTap].Channel
+    if scapy.layers.dot11.Dot11FCS in packet:
+        bssid = packet[scapy.layers.dot11.Dot11FCS].addr2.encode('latin-1')
+    else:
+        bssid = packet.addr2.encode('latin-1')
+
+    # TODO: Handle Multiple cipher options?
+    # TODO: Handle different cipher from pairwise vs groupwise
+    if scapy.layers.dot11.Dot11EltRSN in packet:
+        cipher_i2s = packet[scapy.layers.dot11.Dot11EltRSN].pairwise_cipher_suites[0].fieldtype['cipher'].i2s
+        pairwise_cipher = packet[scapy.layers.dot11.Dot11EltRSN].pairwise_cipher_suites[0].cipher
+        pairwise_cipher = cipher_i2s[pairwise_cipher]
+        
+        group_cipher = packet[scapy.layers.dot11.Dot11EltRSN].group_cipher_suite.cipher
+        group_cipher = cipher_i2s[group_cipher]
+    
+    else:
+        # Open WiFi
+        pairwise_cipher = None
+        group_cipher = None
 
     for layer in iter_layers_by_type(packet, scapy.layers.dot11.Dot11Elt, allow_subclass=True):
 
         # If we're looking at the SSID field of the beacon
         if layer.ID == dot11_type_elt_s2i['SSID']:
             ssid = layer.info
+
+        elif layer.ID == dot11_type_elt_s2i['DS Parameter Set']:
+            channel = layer.info[0]
 
     if ssid is None:
         logger.warn("Parsed Dot11 Beacon but couldn't find SSID...")
@@ -39,4 +58,9 @@ def _handle_dot11beacon(sniffer, packet):
     if ssid == b'\x00':
         ssid = b''
 
-    dot11.record_ssid(ssid=ssid, bssid=bssid, frequency=frequency)
+    # Check for WEP
+    if pairwise_cipher is None and packet[scapy.layers.dot11.Dot11Beacon].cap.privacy:
+        pairwise_cipher = "WEP"
+        group_cipher = "WEP"
+
+    dot11.record_ssid(ssid=ssid, bssid=bssid, channel=channel, pairwise_cipher=pairwise_cipher, group_cipher=group_cipher)

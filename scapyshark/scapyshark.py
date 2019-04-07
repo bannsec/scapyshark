@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 import scapy.all
 import urwid
 from .scrolling import ScrollingListBox
@@ -48,8 +49,12 @@ class ScapyShark(object):
         parser.add_argument('--channel-hop', metavar='interface', type=str, default=None,
                 help='(optional) Interface to channel hop on (default: no channel hopping)')
         parser.add_argument('--lfilter', metavar='python_code', type=str, default=None,
-                help='(optional) Python capture filter (i.e.: "scapy.layers.dot11.Dot11Beacon in packet"')
+                help='(optional) Python capture filter (i.e.: "scapy.layers.dot11.Dot11Beacon in packet")')
+        parser.add_argument('--output', metavar='directory', type=str, default=os.path.abspath('output'),
+                help='(optional) Output directory scapyshark will save things in. default: output')
         self._args = parser.parse_args()
+
+        os.makedirs(self._args.output, exist_ok=True)
 
 
     def _init_window(self):

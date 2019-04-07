@@ -22,4 +22,10 @@ def iter_layers_by_type(packet, target_type, allow_subclass=False):
 
         i += 1
 
+def sanitize_filename(filename):
+    """Take unknown input and sanitize for filename."""
+
+    allowed = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ _-:'
+    return ''.join(c for c in filename if c in allowed)
+
 import urwid

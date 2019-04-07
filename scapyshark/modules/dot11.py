@@ -16,6 +16,7 @@ CREATE TABLE dot11_ap (
     oui int,
     pairwise_cipher text,
     group_cipher text,
+    found_handshake int,
     PRIMARY KEY (ssid, bssid, channel)
     );
 """
@@ -67,17 +68,18 @@ def record_ssid(ssid, bssid, channel, pairwise_cipher, group_cipher):
 
 class WindowAPSummary(Window):
     def update(self):
-        rows = db.execute("SELECT ssid, bssid, group_concat(channel, ', ') AS channels, name AS oui_vendor, pairwise_cipher, group_cipher FROM dot11_ap LEFT JOIN oui_lookup ON dot11_ap.oui = oui_lookup.prefix GROUP BY ssid, bssid ORDER BY ssid", fetch_all=True)
+        rows = db.execute("SELECT ssid, bssid, group_concat(channel, ', ') AS channels, name AS oui_vendor, pairwise_cipher, group_cipher, found_handshake FROM dot11_ap LEFT JOIN oui_lookup ON dot11_ap.oui = oui_lookup.prefix GROUP BY ssid, bssid ORDER BY ssid", fetch_all=True)
 
         if rows == []:
             return
         
-        table = PrettyTable(['SSID', 'BSSID', 'Channel', 'Auth'])
+        table = PrettyTable(['SSID', 'BSSID', 'Channel', 'Auth', 'Handshake'])
         table.border = False
         table.align['SSID'] = 'l'
         table.align['BSSID'] = 'l'
         table.align['Channel'] = 'l'
         table.align['Auth'] = 'l'
+        table.align['Handshake'] = 'l'
         
         for row in rows:
             ssid = row['ssid'].decode('utf-8', errors='replace')
@@ -102,7 +104,9 @@ class WindowAPSummary(Window):
             else:
                 auth = "G: {}, P: {}".format(group_cipher, pairwise_cipher)
 
-            table.add_row([ssid, bssid, channel, auth])
+            handshake = "Found" if row['found_handshake'] == 1 else ''
+
+            table.add_row([ssid, bssid, channel, auth, handshake])
 
         self._update_box_text(str(table))
 

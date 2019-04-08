@@ -13,9 +13,35 @@ def handle(sniffer, packet):
     if scapy.layers.dot11.Dot11Beacon in packet:
         _handle_dot11beacon(sniffer, packet)
 
+    elif scapy.layers.dot11.Dot11ProbeReq in packet:
+        _handle_dot11probereq(sniffer, packet)
+
     else:
         # We didn't handle it
         return
+
+def _handle_dot11probereq(sniffer, packet):
+    
+    ssid = None
+
+    if scapy.layers.dot11.Dot11FCS in packet:
+        mac = packet[scapy.layers.dot11.Dot11FCS].addr2.encode('latin-1')
+    else:
+        mac = packet.addr2.encode('latin-1')
+
+    for layer in iter_layers_by_type(packet, scapy.layers.dot11.Dot11Elt, allow_subclass=True):
+
+        # If we're looking at the SSID field of the beacon
+        if layer.ID == dot11_type_elt_s2i['SSID']:
+            ssid = layer.info
+            break
+
+    # This is a general probe request.
+    if ssid == b'':
+        return
+
+    dot11.record_probe(ssid, mac)
+
 
 def _handle_dot11beacon(sniffer, packet):
 

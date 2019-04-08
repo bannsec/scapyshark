@@ -179,7 +179,7 @@ class WindowDNSSummary(Window):
         if table._rows == []:
             return
 
-        self._update_box_text(str(table))
+        self.text = str(table)
 
 try:
     conn

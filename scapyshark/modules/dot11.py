@@ -129,7 +129,7 @@ class WindowAPSummary(Window):
 
             table.add_row([ssid, bssid, channel, auth, handshake])
 
-        self._update_box_text(str(table))
+        self.text = str(table)
 
 class WindowProbeSummary(Window):
     def update(self):
@@ -150,6 +150,6 @@ class WindowProbeSummary(Window):
             mac = row['mac'].decode('utf-8', errors='replace')
             table.add_row([mac, ssid])
 
-        self._update_box_text(str(table))
+        self.text = str(table)
 
 from . import dot11_types

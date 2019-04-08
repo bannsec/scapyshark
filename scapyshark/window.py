@@ -131,3 +131,13 @@ class Window(object):
             update_on = tuple()
         
         self.__update_on = update_on
+
+    @property
+    def text(self):
+        """str: The text of the box."""
+        return self.__text
+
+    @text.setter
+    def text(self, text):
+        self._update_box_text(text)
+        self.__text = text

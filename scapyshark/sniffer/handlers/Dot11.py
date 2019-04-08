@@ -10,7 +10,7 @@ from ...modules import dot11
 
 def handle(sniffer, packet):
     
-    if scapy.layers.dot11.Dot11Beacon in packet:
+    if scapy.layers.dot11.Dot11Beacon in packet or scapy.layers.dot11.Dot11ProbeResp in packet:
         _handle_dot11beacon(sniffer, packet)
 
     elif scapy.layers.dot11.Dot11ProbeReq in packet:
@@ -71,7 +71,9 @@ def _handle_dot11beacon(sniffer, packet):
 
         # If we're looking at the SSID field of the beacon
         if layer.ID == dot11_type_elt_s2i['SSID']:
-            ssid = layer.info
+            # Sometimes we see multiple... Not sure why... First seems to be right.
+            if ssid == None:
+                ssid = layer.info
 
         elif layer.ID == dot11_type_elt_s2i['DS Parameter Set']:
             channel = layer.info[0]
@@ -85,7 +87,8 @@ def _handle_dot11beacon(sniffer, packet):
         ssid = b''
 
     # Check for WEP
-    if pairwise_cipher is None and packet[scapy.layers.dot11.Dot11Beacon].cap.privacy:
+    base = packet[scapy.layers.dot11.Dot11Beacon] if scapy.layers.dot11.Dot11Beacon in packet else packet[scapy.layers.dot11.Dot11ProbeResp]
+    if pairwise_cipher is None and base.cap.privacy:
         pairwise_cipher = "WEP"
         group_cipher = "WEP"
 

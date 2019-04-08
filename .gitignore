@@ -2,4 +2,4 @@ scapyshark.egg-info*
 *.pyc
 *.swp
 dist
-dns.db
+umbrella.db

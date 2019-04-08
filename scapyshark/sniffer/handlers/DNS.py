@@ -12,6 +12,7 @@ import urwid
 from prettytable import PrettyTable
 from ...modules import db
 from ...window import Window
+from ...modules import umbrella
 
 here = os.path.dirname(os.path.realpath(__file__))
 
@@ -25,33 +26,13 @@ CREATE TABLE dns_requests (
 """
 
 def init():
-    global conn
+    global init_done
     global discovered_dns_db
-    global window_dns_summary
 
     # Init our discovered dns to nothing
     db.execute(create_dns_db)
 
-    logger.info('Performing init.')
-
-    conn = sqlite3.connect(os.path.join(here, 'dns.db'))
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-
-    try:
-        c.execute('SELECT count(*) FROM umbrella')
-
-        # Check that we have a full table and not partial
-        r = next(c)
-        if r['count(*)'] != 1000000:
-            build_umbrella_table()
-
-    except:
-        # Table doesn't exist
-        build_umbrella_table()
-
-    window_dns_summary = urwid.ListBox(urwid.SimpleFocusListWalker([urwid.Text('Nothing yet...')]))
-    c.close()
+    init_done = True
 
 def insert_query_record(sniffer, packet):
 
@@ -112,51 +93,6 @@ def handle(sniffer, packet):
     if updated != 0:
         Window.notify_updates("DNS")
 
-############
-# Umbrella #
-############
-
-def build_umbrella_table():
-
-    print('Building DNS database. Please be patient... ', flush=True, end='')
-
-    # Blow away table if it is there
-    c = conn.cursor()
-    c.execute('''DROP TABLE IF EXISTS umbrella''')
-
-    c.execute('''CREATE TABLE umbrella (rank int, dns text PRIMARY KEY)''')
-    r = requests.get('http://s3-us-west-1.amazonaws.com/umbrella-static/top-1m.csv.zip')
-    zip_f = BytesIO(r.content)
-    z = ZipFile(zip_f,'r')
-    csv = z.read(z.filelist[0]).decode().strip() # Extract csv
-
-    for line in csv.split('\n'):
-        line = line.strip()
-        c.execute('''INSERT INTO umbrella values (?, ?)''', line.split(','))
-
-    conn.commit()
-    c = conn.cursor()
-    c.execute('''VACUUM''')
-    conn.commit()
-    c.close()
-
-    print('OK')
-
-def check_umbrella(dns):
-    """ Return umbrella rank for the given domain name. """
-    c = conn.cursor()
-    c.execute('''SELECT * FROM umbrella WHERE dns == ?''', (dns,))
-
-    try:
-        r = next(c)
-        c.close()
-    except:
-        c.close()
-        # This domain name wasn't found
-        return None
-
-    return r['rank']
-
 ###########
 # Windows #
 ###########
@@ -182,7 +118,7 @@ class WindowDNSSummary(Window):
         self.text = str(table)
 
 try:
-    conn
+    init_done
 except:
     init()
 

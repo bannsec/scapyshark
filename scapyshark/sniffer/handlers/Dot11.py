@@ -61,11 +61,16 @@ def _handle_dot11beacon(sniffer, packet):
         
         group_cipher = packet[scapy.layers.dot11.Dot11EltRSN].group_cipher_suite.cipher
         group_cipher = cipher_i2s[group_cipher]
+
+        akm = packet[scapy.layers.dot11.AKMSuite]
+        akm = akm.fieldtype['suite'].i2s[akm.suite]
     
     else:
         # Open WiFi
         pairwise_cipher = None
         group_cipher = None
+        akm = None
+
 
     for layer in iter_layers_by_type(packet, scapy.layers.dot11.Dot11Elt, allow_subclass=True):
 
@@ -92,4 +97,4 @@ def _handle_dot11beacon(sniffer, packet):
         pairwise_cipher = "WEP"
         group_cipher = "WEP"
 
-    dot11.record_ssid(ssid=ssid, bssid=bssid, channel=channel, pairwise_cipher=pairwise_cipher, group_cipher=group_cipher)
+    dot11.record_ssid(ssid=ssid, bssid=bssid, channel=channel, pairwise_cipher=pairwise_cipher, group_cipher=group_cipher, akm=akm)

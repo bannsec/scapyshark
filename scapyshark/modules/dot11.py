@@ -16,6 +16,7 @@ CREATE TABLE dot11_ap (
     oui int,
     pairwise_cipher text,
     group_cipher text,
+    akm text,
     found_handshake int,
     PRIMARY KEY (ssid, bssid, channel)
     );
@@ -66,18 +67,22 @@ def record_probe(ssid, mac):
     if updated != 0:
         Window.notify_updates("Dot11Probe")
 
-def record_ssid(ssid, bssid, channel, pairwise_cipher, group_cipher):
+def record_ssid(ssid, bssid, channel, pairwise_cipher, group_cipher, akm):
     assert isinstance(ssid, bytes), "SSID needs to be type bytes, not {}".format(type(ssid))
     assert isinstance(bssid, bytes), "BSSID needs to be type bytes, not {}".format(type(bssid))
     assert isinstance(channel, int), "Frequency needs to be integer, not {}".format(type(channel))
 
-    updated = db.execute('INSERT OR IGNORE INTO dot11_ap (ssid, bssid, oui, channel, pairwise_cipher, group_cipher) VALUES (?, ?, ?, ?, ?, ?)',
+    if type(akm) is str:
+        akm = akm.encode('latin-1')
+
+    updated = db.execute('INSERT OR IGNORE INTO dot11_ap (ssid, bssid, oui, channel, pairwise_cipher, group_cipher, akm) VALUES (?, ?, ?, ?, ?, ?, ?)',
             (ssid,
             bssid,
             int(bssid.replace(b":",b"")[:6],16),
             channel,
             pairwise_cipher,
-            group_cipher
+            group_cipher,
+            akm
             ))
 
     if updated != 0:
@@ -89,7 +94,7 @@ def record_ssid(ssid, bssid, channel, pairwise_cipher, group_cipher):
 
 class WindowAPSummary(Window):
     def update(self):
-        rows = db.execute("SELECT ssid, bssid, group_concat(channel, ', ') AS channels, name AS oui_vendor, pairwise_cipher, group_cipher, found_handshake FROM dot11_ap LEFT JOIN oui_lookup ON dot11_ap.oui = oui_lookup.prefix GROUP BY ssid, bssid ORDER BY ssid", fetch_all=True)
+        rows = db.execute("SELECT ssid, bssid, group_concat(channel, ', ') AS channels, name AS oui_vendor, pairwise_cipher, group_cipher, found_handshake, akm FROM dot11_ap LEFT JOIN oui_lookup ON dot11_ap.oui = oui_lookup.prefix GROUP BY ssid, bssid ORDER BY ssid", fetch_all=True)
 
         if rows == []:
             return
@@ -125,6 +130,8 @@ class WindowAPSummary(Window):
             else:
                 auth = "G: {}, P: {}".format(group_cipher, pairwise_cipher)
 
+            if row['akm'] != None:
+                auth += ' ' + row['akm'].decode(errors='replace')
             handshake = "Found" if row['found_handshake'] == 1 else ''
 
             table.add_row([ssid, bssid, channel, auth, handshake])

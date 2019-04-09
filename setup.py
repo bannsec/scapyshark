@@ -34,7 +34,7 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     # Using github version since pypi version is old and dns responses are broken in it
     # Need latest version of prettytable for max_table variables and printing
-    install_requires=['scapy @ https://github.com/secdev/scapy/archive/master.zip', 'prettytable @ https://github.com/jazzband/prettytable/archive/master.zip', 'urwid', 'requests', 'pexpect'],
+    install_requires=['scapy @ https://github.com/secdev/scapy/archive/master.zip', 'prettytable @ https://github.com/jazzband/prettytable/archive/master.zip', 'urwid', 'requests', 'pexpect', 'psutil'],
     entry_points={
         'console_scripts': [
             'scapyshark = scapyshark.scapyshark:main',

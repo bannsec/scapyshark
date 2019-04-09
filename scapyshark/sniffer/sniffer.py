@@ -16,6 +16,7 @@ import subprocess
 import random
 import multiprocessing
 import itertools
+import psutil
 
 TSHARK_PIPE = '/tmp/scapyshark.pipe'
 
@@ -55,6 +56,7 @@ class Sniffer(object):
         if self._shark._args.lfilter is not None:
             lfilter = lambda packet: eval(self._shark._args.lfilter)
 
+        # iface is supposed to sniff on all interfaces but sometimes it doesn't... Explicitly identifying interfaces with psutil.
         kwargs={'store': False,
                 'prn': self._handle_new_packet,
                 'filter': ' '.join(self._shark._args.expression),
@@ -62,6 +64,7 @@ class Sniffer(object):
                 'count': self._max_count,
                 'timeout': self._timeout,
                 'lfilter': lfilter,
+                'iface': [nic for nic, val in psutil.net_if_stats().items() if val.isup]
                 }
 
         sniffer = Thread(target=scapy.all.sniff, kwargs=kwargs)

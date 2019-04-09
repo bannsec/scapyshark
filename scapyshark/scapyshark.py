@@ -222,7 +222,7 @@ class ScapyShark(object):
 
         # General handler
         if buttons is None:
-            ok = urwid.Button(u"Ok", on_press=lambda _: self._pop_overlay())
+            ok = urwid.AttrMap(urwid.Button(u"Ok", on_press=lambda _: self._pop_overlay()), 'frame')
             buttons = urwid.Filler(urwid.Columns([ok]))
 
         else:

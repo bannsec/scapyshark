@@ -3,13 +3,15 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 import os, sys, ast
-from scapyshark.version import version
 
 here = os.path.abspath(os.path.dirname(__file__))
 
 #with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 #    long_description = f.read()
 long_description = "See website for more info."
+
+with open("./scapyshark/version.py","r") as f:
+    exec(f.read())
 
 setup(
     name='scapyshark',

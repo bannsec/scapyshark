@@ -49,6 +49,9 @@ class Sniffer(object):
             p = multiprocessing.Process(target=self._start_channel_hop, args=[shark._args.channel_hop])
             p.daemon = True
             p.start()
+
+        elif shark._args.channel is not None:
+            self._set_dot11_interface_channel(shark._args.channel[1], shark._args.channel[0])
         
     def start(self):
         """ Start sniffing. """
@@ -71,6 +74,10 @@ class Sniffer(object):
         sniffer.daemon = True
         sniffer.start()
 
+    def _set_dot11_interface_channel(self, interface, channel):
+        """Handles setting the given interface to a specific 802.11 channel."""
+        subprocess.call(['sudo', 'iwconfig', interface, 'channel', str(channel)]) 
+
     def _start_channel_hop(self, interface):
         # TODO: Verify interface exists first
         
@@ -81,7 +88,7 @@ class Sniffer(object):
         while True:
             channel = next(channels_cycle)
             # TODO: Check if we need sudo and only add it if needed.
-            subprocess.call(['sudo', 'iwconfig', interface, 'channel', str(channel)]) 
+            self._set_dot11_interface_channel(interface, channel)
             sleep(0.5)
 
 
